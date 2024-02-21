@@ -1,0 +1,337 @@
+﻿@page "/Carreras"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Gestión de Carreras
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Carreras
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Carrera</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeCarreras == null)
+            {
+                <p><em>Cargando Listado De Carreras...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>Codigo de Carrera</th>
+                            <th>Nombre de Carrera</th>
+                            <th>Acreditada</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var Carrera in ListaDeCarreras)
+                        {
+                        <tr class="bgc-h-yellow-l4 d-style">
+                            <td class="text-600 text-dark">@Carrera.CodigoCarrera</td>
+                            <td class="text-600 text-orange-d2">@Carrera.NombreCarrera</td>
+                            <td class="text-600 text-orange-d2">@Carrera.Acreditada</td>
+                            <td>
+                                <div class="d-none d-lg-flex">
+
+                                    <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(Carrera.CodigoCarrera)">
+                                        <i class="fa fa-pencil-alt"></i>
+                                    </button>
+
+                                    <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(Carrera.CodigoCarrera)">
+                                        <i class="fa fa-trash-alt"></i>
+                                    </button>
+
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeCarreras" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeCarreras" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeCarreras">
+                    @(AccionDeEdicion + " " + "Carreras")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CarreraDtoModel" OnValidSubmit="@GuardarCarreras">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CodigoCarrera" class="mb-0">Codigo de Carrera</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CodigoCarrera" @bind-Value="@CarreraDtoModel.CodigoCarrera" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Codigo de Carrera" />
+                            <ValidationMessage For="() => CarreraDtoModel.CodigoCarrera" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NombreCarrera" class="mb-0">Nombre de la Carrera</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NombreCarrera" @bind-Value="@CarreraDtoModel.NombreCarrera"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Nombre de la Carrera" />
+                            <ValidationMessage For="() => CarreraDtoModel.NombreCarrera" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeCarreras" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeCarrera" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeCarrera">
+                    Eliminar Carrera
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CarreraDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CarreraPorEliminarCodigoCarrera" class="mb-0">Codigo de la Carrera</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CarreraPorEliminarCodigoCarrera" class="form-control col-sm-12 col-md-12">@CarreraDtoModel.CodigoCarrera</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CarreraPorEliminarNombreCarrera" class="mb-0">Nombre de Aula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CarreraPorEliminarNombreCarrera" class="form-control col-sm-12 col-md-12">@CarreraDtoModel.NombreCarrera</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeCarrera">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private CarreraDto[] ListaDeCarreras;
+
+    private CarreraDto CarreraDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private string CodigoCarreraPorActualizar;
+
+    private string CodigoCarreraPorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerCarreras();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        CarreraDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCarreras");
+    }
+
+    private async Task MostrarModalDeActualizar(string CodigoCarrera)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerCarrerasPorId(CodigoCarrera);
+
+        CodigoCarreraPorActualizar = CodigoCarrera;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCarreras");
+
+    }
+
+    private async Task GuardarCarreras()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarCarrera();
+        }
+        else
+        {
+            await ActualizarCarrera();
+        }
+    }
+
+    private async Task MostrarModalDeEliminar(string CodigoCarrera)
+    {
+
+        await ObtenerCarrerasPorId(CodigoCarrera);
+
+        CodigoCarreraPorEliminar = CodigoCarrera;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeCarreras");
+    }
+
+    private async Task ConfirmarEliminacionDeCarrera()
+    {
+
+        await EliminarCarrera();
+
+    }
+
+
+    private async Task ObtenerCarreras()
+    {
+        ListaDeCarreras = await Http.GetFromJsonAsync<CarreraDto[]>($"{UtlHost}/Carreras");
+    }
+
+    private async Task ObtenerCarrerasPorId(string CodigoCarrera)
+    {
+        CarreraDtoModel = await Http.GetFromJsonAsync<CarreraDto>($"{UtlHost}/Carreras/{CodigoCarrera}");
+
+    }
+
+    private async Task AgregarCarrera()
+    {
+        var Carrera = CarreraDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/Carreras", Carrera);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCarreras");
+
+            await ObtenerCarreras();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Carrera agregada correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar la Carrera ");
+
+        }
+    }
+
+    private async Task ActualizarCarrera()
+    {
+        var Carrera = CarreraDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/Carreras/{CodigoCarreraPorActualizar}", Carrera);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCarreras");
+
+            await ObtenerCarreras();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Carrera actualizada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar la Carrera ");
+
+        }
+    }
+
+    private async Task EliminarCarrera()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/Carreras/{CodigoCarreraPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeCarreras");
+
+            await ObtenerCarreras();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Carrera eliminada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar la Carrera");
+
+        }
+    }
+}

@@ -1,0 +1,11 @@
+﻿--FUNCION PARA MOSTRAR REGISTRO POR ID Y MOSTRAR SOLO LOS ACTIVOS
+CREATE FUNCTION fn_Carreras_SeleccionarPorId
+(
+	@CodigoCarrera VARCHAR(10)
+)
+RETURNS TABLE
+AS
+RETURN
+	SELECT * FROM Carreras
+	WHERE CodigoCarrera = @CodigoCarrera
+	AND Activo = 1

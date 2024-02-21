@@ -1,0 +1,385 @@
+﻿@page "/CicloLectivo"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Lista de Clicos Lectivos
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Ciclo Lectivo
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Ciclo Lectivo</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeCicloLectivo == null)
+            {
+                <p><em>Cargando Listado De Ciclos Lectivos...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>Numero Ciclo</th>
+                            <th>Nombre Ciclo</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var cicloLectivo in ListaDeCicloLectivo)
+                        {
+                            <tr class="bgc-h-yellow-l4 d-style">
+                                <td class="text-600 text-dark">@cicloLectivo.NumeroCiclo</td>
+                                <td class="text-600 text-orange-d2">@cicloLectivo.NombreCiclo</td>
+                                <td class="text-600 text-orange-d2">@cicloLectivo.FechaInicio</td>
+                                <td class="text-600 text-orange-d2">@cicloLectivo.FechaFin</td>
+                                <td>
+                                    <div class="d-none d-lg-flex">
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(cicloLectivo.NumeroCiclo)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(cicloLectivo.NumeroCiclo)">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeCiclosLectivos" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeCicloLectivo" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeCicloLectivo">
+                    @(AccionDeEdicion + " " + "CiclosLectivos")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CicloLectivoDtoModel" OnValidSubmit="@GuardarCiclosLectivos">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NumeroCiclo" class="mb-0">Numero de Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NumeroCiclo" @bind-Value="@CicloLectivoDtoModel.NumeroCiclo" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese número de ciclo" />
+                            <ValidationMessage For="() => CicloLectivoDtoModel.NumeroCiclo" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NombreCiclo" class="mb-0">Nombre Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NombreCiclo" @bind-Value="@CicloLectivoDtoModel.NombreCiclo"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Nombre de Ciclo" />
+                            <ValidationMessage For="() => CicloLectivoDtoModel.NombreCiclo" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="FechaInicio" class="mb-0">Fecha Inicio</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputDate id="FechaInicio" @bind-Value="@CicloLectivoDtoModel.FechaInicio"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese la Fecha Inicio" />
+                            <ValidationMessage For="() => CicloLectivoDtoModel.FechaInicio" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="FechaFin" class="mb-0">Fecha Fin</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputDate id="FechaFin" @bind-Value="@CicloLectivoDtoModel.FechaFin"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese la Fecha Fin" />
+                            <ValidationMessage For="() => CicloLectivoDtoModel.FechaFin" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeCiclosLectivos" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeCicloLectivo" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeCicloLectivo">
+                    Eliminar Ciclo Lectivo
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CicloLectivoDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CiclosLectivosPorEliminarNumeroCiclo" class="mb-0">Numero de Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CiclosLectivosPorEliminarNumeroCiclo" class="form-control col-sm-12 col-md-12">@CicloLectivoDtoModel.NumeroCiclo</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CiclosLectivosPorEliminarNombreCiclo" class="mb-0">Nombre de Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CiclosLectivosPorEliminarNombreCiclo" class="form-control col-sm-12 col-md-12">@CicloLectivoDtoModel.NombreCiclo</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CiclosLectivosPorEliminarFechaInicio" class="mb-0">Fecha de Inicio</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CiclosLectivosPorEliminarFechaInicio" class="form-control col-sm-12 col-md-12">@CicloLectivoDtoModel.FechaInicio</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CiclosLectivosPorEliminarFechaFin" class="mb-0">Fecha de Fin</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CiclosLectivosPorEliminarFechaFin" class="form-control col-sm-12 col-md-12">@CicloLectivoDtoModel.FechaFin</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeCicloLectivo">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private CicloLectivoDto[] ListaDeCicloLectivo;
+
+    private CicloLectivoDto CicloLectivoDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private string CiclosLectivosPorActualizar;
+
+    private string CiclosLectivosPorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerCicloLectivo();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        CicloLectivoDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCiclosLectivos");
+    }
+
+    private async Task MostrarModalDeActualizar(string NumeroCiclo)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerCicloLectivoPorId(NumeroCiclo);
+
+        CiclosLectivosPorActualizar = NumeroCiclo;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCiclosLectivos");
+
+    }
+
+    private async Task GuardarCiclosLectivos()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarCiclosLectivos();
+        }
+        else
+        {
+            await ActualizarCiclosLectivos();
+        }
+    }
+
+
+    private async Task MostrarModalDeEliminar(string NumeroCiclo)
+    {
+
+        await ObtenerCicloLectivoPorId(NumeroCiclo);
+
+        CiclosLectivosPorEliminar = NumeroCiclo;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeCiclosLectivos");
+    }
+
+    private async Task ConfirmarEliminacionDeCicloLectivo()
+    {
+
+        await EliminarCiclosLectivos();
+
+    }
+
+    private async Task ObtenerCicloLectivo()
+    {
+        ListaDeCicloLectivo = await Http.GetFromJsonAsync<CicloLectivoDto[]>($"{UtlHost}/CiclosLectivos");
+    }
+
+    private async Task ObtenerCicloLectivoPorId(string NumeroCiclo)
+    {
+        CicloLectivoDtoModel = await Http.GetFromJsonAsync<CicloLectivoDto>($"{UtlHost}/CiclosLectivos/{NumeroCiclo}");
+
+    }
+
+    private async Task AgregarCiclosLectivos()
+    {
+        var cicloLectivo = CicloLectivoDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/CiclosLectivos", cicloLectivo);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCiclosLectivos");
+
+            await ObtenerCicloLectivo();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Ciclos Lectivos agregado correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar los Ciclos Lectivos ");
+
+        }
+    }
+
+    private async Task ActualizarCiclosLectivos()
+    {
+        var cicloLectivo = CicloLectivoDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/CiclosLectivos/{CiclosLectivosPorActualizar}", cicloLectivo);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCiclosLectivos");
+
+            await ObtenerCicloLectivo();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Ciclos Lectivos actualizado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar los Ciclos Lectivos ");
+
+        }
+    }
+
+    private async Task EliminarCiclosLectivos()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/CiclosLectivos/{CiclosLectivosPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeCiclosLectivos");
+
+            await ObtenerCicloLectivo();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Ciclos Lectivos eliminado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar los Ciclos Lectivos");
+
+        }
+    }
+
+}

@@ -1,0 +1,360 @@
+﻿@page "/CursosEnMatriculas"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Lista de Cursos en Matricula
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Aulas
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Cursos En Matriculas</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeCursosEnMatricula == null)
+            {
+                <p><em>Cargando Listado De Cursos en Matricula...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>Numero Matricula</th>
+                            <th>Codigo Curso</th>
+                            <th>Numero Ciclo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var cursosEnMatricula in ListaDeCursosEnMatricula)
+                        {
+                            <tr class="bgc-h-yellow-l4 d-style">
+                                <td class="text-600 text-dark">@cursosEnMatricula.NumeroMatricula</td>
+                                <td class="text-600 text-orange-d2">@cursosEnMatricula.CodigoCurso</td>
+                                <td class="text-600 text-orange-d2">@cursosEnMatricula.NumeroCiclo</td>
+                                <td>
+                                    <div class="d-none d-lg-flex">
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(cursosEnMatricula.NumeroMatricula)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(cursosEnMatricula.NumeroMatricula)">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeCursosEnMatriculas" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeCursosEnMatriculas" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeCursosEnMatriculas">
+                    @(AccionDeEdicion + " " + "CursosEnMatriculas")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CursosEnMatriculasDtoModel" OnValidSubmit="@GuardarCursosEnMatriculas">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NumeroMatricula" class="mb-0">Numero de Matricula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputNumber id="NumeroMatricula" @bind-Value="@CursosEnMatriculasDtoModel.NumeroMatricula" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                         class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Numero Matricula" />
+                            <ValidationMessage For="() => CursosEnMatriculasDtoModel.NumeroMatricula" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CodigoCurso" class="mb-0">Codigo del Curso</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CodigoCurso" @bind-Value="@CursosEnMatriculasDtoModel.CodigoCurso"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Codigo de Curso" />
+                            <ValidationMessage For="() => CursosEnMatriculasDtoModel.CodigoCurso" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NumeroCiclo" class="mb-0">Numero Ciclo del Curso</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NumeroCiclo" @bind-Value="@CursosEnMatriculasDtoModel.NumeroCiclo"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Numero Ciclo" />
+                            <ValidationMessage For="() => CursosEnMatriculasDtoModel.NumeroCiclo" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeCursosEnMatriculas" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeCursosEnMatriculas" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeCursosEnMatriculas">
+                    Eliminar Cursos En Matriculas
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CursosEnMatriculasDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursosEnMatriculasPorEliminarNumeroMatricula" class="mb-0">Número de Matricula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosEnMatriculasPorEliminarNumeroMatricula" class="form-control col-sm-12 col-md-12">@CursosEnMatriculasDtoModel.NumeroMatricula</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursosEnMatriculasPorEliminarCodigoCurso" class="mb-0">Codigo Curso</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosEnMatriculasPorEliminarCodigoCurso" class="form-control col-sm-12 col-md-12">@CursosEnMatriculasDtoModel.CodigoCurso</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursosEnMatriculasPorEliminarNumeroCiclo" class="mb-0">NumeroCiclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosEnMatriculasPorEliminarNumeroCiclo" class="form-control col-sm-12 col-md-12">@CursosEnMatriculasDtoModel.NumeroCiclo</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeAula">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CursosEnMatriculaDto[] ListaDeCursosEnMatricula;
+
+    private CursosEnMatriculaDto CursosEnMatriculasDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private int CursosEnMatriculasPorActualizar;
+
+    private int CursosEnMatriculasPorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerListaDeCursosEnMatricula();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        CursosEnMatriculasDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCursosEnMatriculas");
+    }
+
+    private async Task MostrarModalDeActualizar(int NumeroMatricula)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerCursosEnMatriculasPorId(NumeroMatricula);
+
+        CursosEnMatriculasPorActualizar = NumeroMatricula;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCursosEnMatriculas");
+
+    }
+
+    private async Task GuardarCursosEnMatriculas()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarCursosEnMatriculas();
+        }
+        else
+        {
+            await ActualizarCursosEnMatriculas();
+        }
+    }
+
+
+    private async Task MostrarModalDeEliminar(int NumeroMatricula)
+    {
+
+        await ObtenerCursosEnMatriculasPorId(NumeroMatricula);
+
+        CursosEnMatriculasPorEliminar = NumeroMatricula;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeCursosEnMatriculas");
+    }
+
+    private async Task ConfirmarEliminacionDeAula()
+    {
+
+        await EliminarCursosEnMatriculas();
+
+    }
+
+
+    private async Task ObtenerListaDeCursosEnMatricula()
+    {
+        ListaDeCursosEnMatricula = await Http.GetFromJsonAsync<CursosEnMatriculaDto[]>($"{UtlHost}/CursosEnMatriculas");
+    }
+
+    private async Task ObtenerCursosEnMatriculasPorId(int NumeroMatricula)
+    {
+        CursosEnMatriculasDtoModel = await Http.GetFromJsonAsync<CursosEnMatriculaDto>($"{UtlHost}/CursosEnMatriculas/{NumeroMatricula}");
+
+    }
+
+
+    private async Task AgregarCursosEnMatriculas()
+    {
+        var cursosEnMatricula = CursosEnMatriculasDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/CursosEnMatriculas", cursosEnMatricula);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCursosEnMatriculas");
+
+            await ObtenerListaDeCursosEnMatricula();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Cursos En Matriculas agregada correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar los Cursos En Matriculas ");
+
+        }
+    }
+
+    private async Task ActualizarCursosEnMatriculas()
+    {
+        var cursosEnMatricula = CursosEnMatriculasDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/CursosEnMatriculas/{CursosEnMatriculasPorActualizar}", cursosEnMatricula);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCursosEnMatriculas");
+
+            await ObtenerListaDeCursosEnMatricula();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Cursos En Matriculas actualizada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar el aula ");
+
+        }
+    }
+
+    private async Task EliminarCursosEnMatriculas()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/CursosEnMatriculas/{CursosEnMatriculasPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeCursosEnMatriculas");
+
+            await ObtenerListaDeCursosEnMatricula();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Cursos En Matriculas eliminada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar el aula");
+
+        }
+    }
+}

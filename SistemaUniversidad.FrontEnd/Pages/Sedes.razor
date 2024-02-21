@@ -1,0 +1,412 @@
+﻿@page "/Sedes"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Gestión de Sedes
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Aulas
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Sedes</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeSedes == null)
+            {
+                <p><em>Cargando Listado De Sedes...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>Codigo Sede</th>
+                            <th>Nombre Sede</th>
+                            <th>Telefono</th>
+                            <th>Correo Electronico</th>
+                            <th>Direccion</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var Sede in ListaDeSedes)
+                        {
+                            <tr class="bgc-h-yellow-l4 d-style">
+                                <td class="text-600 text-dark">@Sede.CodigoSede</td>
+                                <td class="text-600 text-orange-d2">@Sede.NombreSede</td>
+                                <td class="text-600 text-orange-d2">@Sede.Telefono</td>
+                                <td class="text-600 text-orange-d2">@Sede.CorreoElectronico</td>
+                                <td class="text-600 text-orange-d2">@Sede.Direccion</td>
+                                <td>
+                                    <div class="d-none d-lg-flex">
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(Sede.CodigoSede)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(Sede.CodigoSede)">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeSedes" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeSedes" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeSedes">
+                    @(AccionDeEdicion + " " + "Sedes")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@SedesDtoModel" OnValidSubmit="@GuardarAula">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CodigoSede" class="mb-0">Codigo de la Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CodigoSede" @bind-Value="@SedesDtoModel.CodigoSede" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Codigo de Sede" />
+                            <ValidationMessage For="() => SedesDtoModel.CodigoSede" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NombreSede" class="mb-0">Nombre de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NombreSede" @bind-Value="@SedesDtoModel.NombreSede"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Nombre de la Sede" />
+                            <ValidationMessage For="() => SedesDtoModel.NombreSede" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Telefono" class="mb-0">Telefono de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Telefono" @bind-Value="@SedesDtoModel.Telefono"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Telefono de la Sede" />
+                            <ValidationMessage For="() => SedesDtoModel.Telefono" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CorreoElectronico" class="mb-0">Correo Electronico de la Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CorreoElectronico" @bind-Value="@SedesDtoModel.CorreoElectronico"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Correo Electronico de la Sede" />
+                            <ValidationMessage For="() => SedesDtoModel.CorreoElectronico" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Direccion" class="mb-0">Direccion de la Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Direccion" @bind-Value="@SedesDtoModel.Direccion"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese la Direccion de la Sede" />
+                            <ValidationMessage For="() => SedesDtoModel.Direccion" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeSedes" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeSedes" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeSedes">
+                    Eliminar Aula
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@SedesDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="SedesPorEliminarCodigoSede" class="mb-0">Codigo de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="SedesPorEliminarCodigoSede" class="form-control col-sm-12 col-md-12">@SedesDtoModel.CodigoSede</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="SedesPorEliminarNombreSede" class="mb-0">Nombre de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="SedesPorEliminarNombreSede" class="form-control col-sm-12 col-md-12">@SedesDtoModel.NombreSede</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="SedesPorEliminarTelefono" class="mb-0">Telefono de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="SedesPorEliminarTelefono" class="form-control col-sm-12 col-md-12">@SedesDtoModel.Telefono</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="SedesPorEliminarCorreoElectronicoSede" class="mb-0">Correo Electronico de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="SedesPorEliminarCorreoElectronicoSede" class="form-control col-sm-12 col-md-12">@SedesDtoModel.CorreoElectronico</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="SedesPorEliminarDireccionSede" class="mb-0">Direccion de Sede</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="SedesPorEliminarDireccionSede" class="form-control col-sm-12 col-md-12">@SedesDtoModel.Direccion</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeAula">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private SedeDto[] ListaDeSedes;
+
+    private SedeDto SedesDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private string NumeroSedesPorActualizar;
+
+    private string NumeroSedesPorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerSedes();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        SedesDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeSedes");
+    }
+
+    private async Task MostrarModalDeActualizar(string CodigoSede)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerSedesPorId(CodigoSede);
+
+        NumeroSedesPorActualizar = CodigoSede;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeSedes");
+
+    }
+
+    private async Task GuardarAula()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarSede();
+        }
+        else
+        {
+            await ActualizarSedes();
+        }
+    }
+
+
+    private async Task MostrarModalDeEliminar(string CodigoSede)
+    {
+
+        await ObtenerSedesPorId(CodigoSede);
+
+        NumeroSedesPorEliminar = CodigoSede;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeSedes");
+    }
+
+    private async Task ConfirmarEliminacionDeAula()
+    {
+
+        await EliminarSedes();
+
+    }
+
+
+    private async Task ObtenerSedes()
+    {
+        ListaDeSedes = await Http.GetFromJsonAsync<SedeDto[]>($"{UtlHost}/Sedes");
+    }
+
+    private async Task ObtenerSedesPorId(string CodigoSede)
+    {
+        SedesDtoModel = await Http.GetFromJsonAsync<SedeDto>($"{UtlHost}/Sedes/{CodigoSede}");
+
+    }
+
+
+    private async Task AgregarSede()
+    {
+        var Sede = SedesDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/Sedes", Sede);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeSedes");
+
+            await ObtenerSedes();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Sedes agregada correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar la Sede ");
+
+        }
+    }
+
+    private async Task ActualizarSedes()
+    {
+        var Sede = SedesDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/Sedes/{NumeroSedesPorActualizar}", Sede);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeSedes");
+
+            await ObtenerSedes();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Sede actualizada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar el aula ");
+
+        }
+    }
+
+    private async Task EliminarSedes()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/Sedes/{NumeroSedesPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeSedes");
+
+            await ObtenerSedes();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Sedes eliminada correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar la Sedes");
+
+        }
+    }
+
+
+}

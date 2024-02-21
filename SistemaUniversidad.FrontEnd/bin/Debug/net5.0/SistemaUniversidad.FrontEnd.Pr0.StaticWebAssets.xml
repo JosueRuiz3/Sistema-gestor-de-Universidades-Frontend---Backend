@@ -1,0 +1,4 @@
+﻿<StaticWebAssets Version="1.0">
+  <ContentRoot BasePath="/" Path="D:\Proyectos IDEs\Proyectos GIT HUB Respositorios\Sistema Universidad Backend - Frontend\SistemaUniversidad.FrontEnd\bin\Debug\net5.0\wwwroot\" />
+  <ContentRoot BasePath="/" Path="D:\Proyectos IDEs\Proyectos GIT HUB Respositorios\Sistema Universidad Backend - Frontend\SistemaUniversidad.FrontEnd\obj\Debug\net5.0\scopedcss\bundle\" />
+</StaticWebAssets>

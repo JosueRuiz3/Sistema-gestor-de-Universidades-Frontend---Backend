@@ -1,0 +1,459 @@
+﻿@page "/Profesores"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Gestión de Profesores
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Aulas
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Aula</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeProfesores == null)
+            {
+                <p><em>Cargando Listado De Profesores...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>CedulaProfesor</th>
+                            <th>NombreProfesor</th>
+                            <th>Apellidos</th>
+                            <th>Telefono</th>
+                            <th>Profesion</th>
+                            <th>Correo Electronico</th>
+                            <th>Edad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var profesores in ListaDeProfesores)
+                        {
+                            <tr class="bgc-h-yellow-l4 d-style">
+                                <td class="text-600 text-dark">@profesores.CedulaProfesor</td>
+                                <td class="text-600 text-orange-d2">@profesores.NombreProfesor</td>
+                                <td class="text-600 text-orange-d2">@profesores.Apellidos</td>
+                                <td class="text-600 text-orange-d2">@profesores.Telefono</td>
+                                <td class="text-600 text-orange-d2">@profesores.Profesion</td>
+                                <td class="text-600 text-orange-d2">@profesores.CorreoElectronico</td>
+                                <td class="text-600 text-orange-d2">@profesores.Edad</td>
+                                <td>
+                                    <div class="d-none d-lg-flex">
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(profesores.CedulaProfesor)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(profesores.CedulaProfesor)">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeProfesor" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeProfesores" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeProfesor">
+                    @(AccionDeEdicion + " " + "Profesores")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@ProfesoreDtoModel" OnValidSubmit="@GuardarProfesor">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CedulaProfesor" class="mb-0">Cedula de Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CedulaProfesor" @bind-Value="@ProfesoreDtoModel.CedulaProfesor" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese número de cedula" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.CedulaProfesor" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NombreProfesor" class="mb-0">Nombre Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NombreProfesor" @bind-Value="@ProfesoreDtoModel.NombreProfesor"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Nombre del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.NombreProfesor" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Apellidos" class="mb-0">Apellidos del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Apellidos" @bind-Value="@ProfesoreDtoModel.Apellidos"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese los Apellidos del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.Apellidos" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Telefono" class="mb-0">Telefono del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Telefono" @bind-Value="@ProfesoreDtoModel.Telefono"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese los Telefono del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.Telefono" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Profesion" class="mb-0">Profesion del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="Profesion" @bind-Value="@ProfesoreDtoModel.Profesion"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese los Profesion del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.Profesion" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CorreoElectronico" class="mb-0">Correo Electronico del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CorreoElectronico" @bind-Value="@ProfesoreDtoModel.CorreoElectronico"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Correo Electronico del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.CorreoElectronico" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="Edad" class="mb-0"> Edad del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputNumber id="Edad" @bind-Value="@ProfesoreDtoModel.Edad"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese la Edad del profesor" />
+                            <ValidationMessage For="() => ProfesoreDtoModel.Edad" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeProfesor" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmarEliminacionDeProfesore" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmarEliminacionDeProfesore">
+                    Eliminar Profesor
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@ProfesoreDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarCedulaProfesor" class="mb-0">Número de Cedula</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarCedulaProfesor" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.CedulaProfesor</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarNombreProfesor" class="mb-0">Nombre</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarNombreProfesor" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.NombreProfesor</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarNombreProfesor" class="mb-0">Apellidos</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarNombreProfesor" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.Apellidos</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarTelefono" class="mb-0">Telefono</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarTelefono" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.Telefono</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarProfesion" class="mb-0">Profesion </label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarProfesion" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.Profesion</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarCorreoElectronico" class="mb-0">Correo Electronico</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarCorreoElectronico" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.CorreoElectronico</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="ProfesorPorEliminarEdad" class="mb-0">Edad</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="ProfesorPorEliminarEdad" class="form-control col-sm-12 col-md-12">@ProfesoreDtoModel.Edad</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeProfesore">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private ProfesoreDto[] ListaDeProfesores;
+
+    private ProfesoreDto ProfesoreDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private string NumeroCedulaProfesorPorActualizar;
+
+    private string NumeroCedulaProfesorPorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerProfesores();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        ProfesoreDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeProfesor");
+    }
+
+    private async Task MostrarModalDeActualizar(string CedulaProfesor)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerPorfesorPorId(CedulaProfesor);
+
+        NumeroCedulaProfesorPorActualizar = CedulaProfesor;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeProfesor");
+
+    }
+
+    private async Task GuardarProfesor()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarProfesor();
+        }
+        else
+        {
+            await ActualizarProfesor();
+        }
+    }
+
+
+    private async Task MostrarModalDeEliminar(string CedulaProfesor)
+    {
+
+        await ObtenerPorfesorPorId(CedulaProfesor);
+
+        NumeroCedulaProfesorPorEliminar = CedulaProfesor;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeProfesor");
+    }
+
+    private async Task ConfirmarEliminacionDeProfesore()
+    {
+
+        await EliminarProfesor();
+
+    }
+
+
+    private async Task ObtenerProfesores()
+    {
+        ListaDeProfesores = await Http.GetFromJsonAsync<ProfesoreDto[]>($"{UtlHost}/Profesores");
+    }
+
+    private async Task ObtenerPorfesorPorId(string CedulaProfesor)
+    {
+        ProfesoreDtoModel = await Http.GetFromJsonAsync<ProfesoreDto>($"{UtlHost}/Profesores/{CedulaProfesor}");
+
+    }
+
+
+    private async Task AgregarProfesor()
+    {
+        var profesores = ProfesoreDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/Profesores", profesores);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeProfesor");
+
+            await ObtenerProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Profesor agregado correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar el profesor ");
+
+        }
+    }
+
+    private async Task ActualizarProfesor()
+    {
+        var profesores = ProfesoreDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/Profesores/{NumeroCedulaProfesorPorActualizar}", profesores);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeProfesor");
+
+            await ObtenerProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Profesor actualizado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar el profesor ");
+
+        }
+    }
+
+    private async Task EliminarProfesor()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/Profesores/{NumeroCedulaProfesorPorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeProfesor");
+
+            await ObtenerProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Profesor eliminado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar el profesor");
+
+        }
+    }
+
+}

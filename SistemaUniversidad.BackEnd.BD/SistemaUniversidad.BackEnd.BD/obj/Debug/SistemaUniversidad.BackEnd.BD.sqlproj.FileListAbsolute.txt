@@ -1,0 +1,12 @@
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\bin\Debug\SistemaUniversidad.BackEnd.BD.dacpac
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\bin\Debug\SistemaUniversidad.BackEnd.BD.dll
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\bin\Debug\SistemaUniversidad.BackEnd.BD.pdb
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\SistemaUniversidad.BackEnd.BD.sqlproj.AssemblyReference.cache
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\Model.xml
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\refactor.xml
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\postdeploy.sql
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\predeploy.sql
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\SistemaUniversidad.BackEnd.BD.dll
+E:\Progra\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\SistemaUniversidad.BackEnd.BD.pdb
+D:\Proyectos IDEs\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\SistemaUniversidad.BackEnd.BD.dll
+D:\Proyectos IDEs\Git Hub\Universidad Back y Font\Uiversidad BackEnd\SistemaUniversidad.BackEnd\SistemaUniversidad.BackEnd.BD\SistemaUniversidad.BackEnd.BD\obj\Debug\SistemaUniversidad.BackEnd.BD.pdb

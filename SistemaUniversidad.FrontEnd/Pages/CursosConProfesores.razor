@@ -1,0 +1,359 @@
+﻿@page "/CursosConProfesore"
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>
+    Lista de Cursos Con Profesores
+</h1>
+
+<div class="card dcard">
+    <div class="card-body px-1 px-md-3">
+
+        <form autocomplete="off">
+            <div class="d-flex justify-content-between flex-column flex-sm-row mb-3 px-2 px-sm-0">
+                <h3 class="text-125 pl-1 mb-3 mb-sm-0 text-secondary-d4">
+                    Listado de Aulas
+                </h3>
+
+                <div class="mb-2 mb-sm-0">
+                    <button type="button" class="btn btn-blue px-3 d-block w-100 text-95 radius-round border-2 brc-black-tp10" @onclick="MostrarModalDeAgregar">
+                        <i class="fa fa-plus mr-1"></i>
+                        Agregar <span class="d-sm-none d-md-inline">Aula</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (ListaDeCursosConProfesores == null)
+            {
+                <p><em>Cargando Listado De Cursos Con Profesores...</em></p> }
+            else
+            {
+                <table id="simple-table" class="mb-0 table table-borderless table-bordered-x brc-secondary-l3 text-dark-m2 radius-1 overflow-hidden">
+                    <thead class="text-dark-tp3 bgc-grey-l4 text-90 border-b-1 brc-transparent">
+                        <tr>
+                            <th>Codigo Curso</th>
+                            <th>Cedula Profesor</th>
+                            <th>Numero Ciclo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="mt-1">
+
+                        @foreach (var cursosConProfesore in ListaDeCursosConProfesores)
+                        {
+                            <tr class="bgc-h-yellow-l4 d-style">
+                                <td class="text-600 text-dark">@cursosConProfesore.CodigoCurso</td>
+                                <td class="text-600 text-orange-d2">@cursosConProfesore.CedulaProfesor</td>
+                                <td class="text-600 text-orange-d2">@cursosConProfesore.NumeroCiclo</td>
+                                <td>
+                                    <div class="d-none d-lg-flex">
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-success btn-a-lighter-success" @onclick="() => MostrarModalDeActualizar(cursosConProfesore.CodigoCurso)">
+                                            <i class="fa fa-pencil-alt"></i>
+                                        </button>
+
+                                        <button type="button" class="mx-2px btn radius-1 border-2 btn-xs btn-brc-tp btn-light-secondary btn-h-lighter-danger btn-a-lighter-danger" @onclick="() => MostrarModalDeEliminar(cursosConProfesore.CodigoCurso)">
+                                            <i class="fa fa-trash-alt"></i>
+                                        </button>
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>}
+
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalEdicionDeCursosConProfesores" tabindex="-1" role="dialog" aria-labelledby="LabelEdicionDeCursosConProfesores" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelEdicionDeCursosConProfesores">
+                    @(AccionDeEdicion + " " + "CursosConProfesores")
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CursosConProfesoreDtoModel" OnValidSubmit="@GuardarCursosConProfesore">
+
+                <DataAnnotationsValidator />
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CodigoCurso" class="mb-0">Codigo de Curso</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CodigoCurso" @bind-Value="@CursosConProfesoreDtoModel.CodigoCurso" disabled="@(AccionDeEdicion == "Actualizar" ? true : false)"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Codigo de Curso" />
+                            <ValidationMessage For="() => CursosConProfesoreDtoModel.CodigoCurso" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CedulaProfesor" class="mb-0">Cedula del Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="CedulaProfesor" @bind-Value="@CursosConProfesoreDtoModel.CedulaProfesor"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese la cedula del Profesor" />
+                            <ValidationMessage For="() => CursosConProfesoreDtoModel.CedulaProfesor" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="NumeroCiclo" class="mb-0">Numero de Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <InputText id="NumeroCiclo" @bind-Value="@CursosConProfesoreDtoModel.NumeroCiclo"
+                                       class="form-control col-sm-12 col-md-12" placeholder="Ingrese el Numero Ciclo" />
+                            <ValidationMessage For="() => CursosConProfesoreDtoModel.NumeroCiclo" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ModalConfirmacionDeEliminacionDeCursos" tabindex="-1" role="dialog" aria-labelledby="LabelConfirmacionDeEliminacionDeCurso" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title text-primary-d3" id="LabelConfirmacionDeEliminacionDeCurso">
+                    Eliminar Cursos Con Profesores
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <EditForm Model="@CursosConProfesoreDtoModel">
+
+
+                <div class="modal-body">
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursoPorEliminarCodigoCurso" class="mb-0">Codigo del curso</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosConProfesoreConProfesorePorEliminarCodigoCurso" class="form-control col-sm-12 col-md-12">@CursosConProfesoreDtoModel.CodigoCurso</label>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursosConProfesorePorEliminarCedulaProfesor" class="mb-0">Cedula Profesor</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosConProfesorePorEliminarCedulaProfeso" class="form-control col-sm-12 col-md-12">@CursosConProfesoreDtoModel.CedulaProfesor</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4 col-form-label text-sm-right pr-0">
+                            <label for="CursosConProfesorePorEliminarNumeroCiclo" class="mb-0">Numero Ciclo</label>
+                        </div>
+
+                        <div class="col-sm-8">
+                            <label for="CursosConProfesorePorEliminarNumeroCiclo" class="form-control col-sm-12 col-md-12">@CursosConProfesoreDtoModel.NumeroCiclo</label>
+                        </div>
+                    </div>
+
+                    <div class="alert bgc-orange-l3 brc-orange-l1 text-dark-tp1" role="alert">
+                        Desea
+                        <a class="alert-link text-danger-d1">
+                            Eliminar
+                        </a>
+                        este registro?
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="ConfirmarEliminacionDeCursosConProfesores">Sí</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private CursosConProfesoreDto[] ListaDeCursosConProfesores;
+
+    private CursosConProfesoreDto CursosConProfesoreDtoModel = new();
+
+
+    private string AccionDeEdicion;
+
+    private string CodigoCursoPorActualizar;
+
+    private string CodigoCursosConProfesorePorEliminar;
+
+    private string UtlHost = "https://localhost:44365/api";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerCursosConProfesores();
+    }
+
+    private async Task MostrarModalDeAgregar()
+    {
+
+        AccionDeEdicion = "Agregar";
+        CursosConProfesoreDtoModel = new();
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCursosConProfesores");
+    }
+
+    private async Task MostrarModalDeActualizar(string CodigoCurso)
+    {
+
+        AccionDeEdicion = "Actualizar";
+
+        await ObtenerCursosConProfesorePorId(CodigoCurso);
+
+        CodigoCursoPorActualizar = CodigoCurso;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalEdicionDeCursosConProfesores");
+
+    }
+
+    private async Task GuardarCursosConProfesore()
+    {
+        if (AccionDeEdicion == "Agregar")
+        {
+            await AgregarCursosConProfesores();
+        }
+        else
+        {
+            await ActualizarCursosConProfesores();
+        }
+    }
+
+    private async Task MostrarModalDeEliminar(string CodigoCurso)
+    {
+
+        await ObtenerCursosConProfesorePorId(CodigoCurso);
+
+        CodigoCursosConProfesorePorEliminar = CodigoCurso;
+
+        await JSRuntime.InvokeAsync<object>("global.openModal", "ModalConfirmacionDeEliminacionDeCursosConProfesore");
+    }
+
+    private async Task ConfirmarEliminacionDeCursosConProfesores()
+    {
+
+        await EliminarCursosConProfesores();
+
+    }
+
+
+    private async Task ObtenerCursosConProfesores()
+    {
+        ListaDeCursosConProfesores = await Http.GetFromJsonAsync<CursosConProfesoreDto[]>($"{UtlHost}/CursosConProfesores");
+    }
+
+    private async Task ObtenerCursosConProfesorePorId(string CodigoCurso)
+    {
+        CursosConProfesoreDtoModel = await Http.GetFromJsonAsync<CursosConProfesoreDto>($"{UtlHost}/CursosConProfesores/{CodigoCurso}");
+
+    }
+
+    private async Task AgregarCursosConProfesores()
+    {
+        var cursosConProfesore = CursosConProfesoreDtoModel;
+
+        using var response = await Http.PostAsJsonAsync($"{UtlHost}/CursosConProfesores", cursosConProfesore);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCursosConProfesores");
+
+            await ObtenerCursosConProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Curso agregada correctamente");
+
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo agregar el Curso ");
+
+        }
+    }
+
+    private async Task ActualizarCursosConProfesores()
+    {
+        var cursosConProfesore = CursosConProfesoreDtoModel;
+
+        using var response = await Http.PutAsJsonAsync($"{UtlHost}/CursosConProfesores/{CodigoCursoPorActualizar}", cursosConProfesore);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalEdicionDeCursosConProfesores");
+
+            await ObtenerCursosConProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Curso actualizado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "No se pudo actualizar la Curso ");
+
+        }
+    }
+
+    private async Task EliminarCursosConProfesores()
+    {
+        using var response = await Http.DeleteAsync($"{UtlHost}/CursosConProfesores/{CodigoCursosConProfesorePorEliminar}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeAsync<object>("global.closeModal", "ModalConfirmacionDeEliminacionDeCurso");
+
+            await ObtenerCursosConProfesores();
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaExito", "Curso eliminado correctamente");
+        }
+        else
+        {
+            string errorMessage = response.ReasonPhrase;
+            Console.WriteLine($"Error: {errorMessage}");
+
+            await JSRuntime.InvokeAsync<object>("global.mostrarAlertaError", "Error al eliminar el curso");
+
+        }
+    }
+}
